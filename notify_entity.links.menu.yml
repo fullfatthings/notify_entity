@@ -1,0 +1,6 @@
+notify_entity.admin:
+  title: 'Notify Entity'
+  description: 'Configure Notify Entity.'
+  parent: system.admin_config_content
+  route_name: notify_entity.admin
+  menu_name: admin

@@ -1,0 +1,3 @@
+administer notify entity:
+  title: 'Administer Notify Entity'
+  description: 'Alter settings for notify entity.'

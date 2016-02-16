@@ -1,0 +1,7 @@
+notify_entity.admin:
+  path: '/admin/config/content/notify-entity'
+  defaults:
+    _form: '\Drupal\notify_entity\Form\NotifyEntityForm'
+    _title: 'Notify Entity Settings'
+  requirements:
+    _permission: 'administer notify entity'

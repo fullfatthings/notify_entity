@@ -1,0 +1,6 @@
+name: Notify Entity
+type: module
+description: 'Simple module to allow email notification for entity insert, update and delete.'
+
+version: '8.x-0.1'
+core: '8.x'

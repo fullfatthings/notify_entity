@@ -1,0 +1,96 @@
+<?php
+
+
+
+/**
+ * Implements hook_entity_insert().
+ */
+function notify_entity_entity_insert(Drupal\Core\Entity\EntityInterface $entity) {
+  _notify_entity_trigger_event('insert', $entity);
+}
+
+
+/**
+ * Implements hook_entity_delete().
+ */
+function notify_entity_entity_delete(Drupal\Core\Entity\EntityInterface $entity) {
+  _notify_entity_trigger_event('delete', $entity);
+}
+
+
+/**
+ * Implements hook_entity_update().
+ */
+function notify_entity_entity_update(Drupal\Core\Entity\EntityInterface $entity) {
+  _notify_entity_trigger_event('update', $entity);
+}
+
+
+/**
+ * Central trigger event function.
+ *
+ * @param String  $event   A string to represent the event.
+ * @param \Drupal\Core\Entity\EntityInterface $entity   The triggering entity.
+ */
+function _notify_entity_trigger_event($event, Drupal\Core\Entity\EntityInterface $entity) {
+  $config = \Drupal::configFactory()->get('notify_entity.settings');
+  $key = $entity->getEntityTypeId() . '.' . $entity->bundle();
+
+  if ($value = $config->get($key)) {
+    if ($value[$event]) {
+      $module = 'notify_entity';
+      $key = 'new_post';
+      $to = $value['email'];
+      $params = [
+        'event' => $event,
+        'entity' => $entity,
+      ];
+      $language = \Drupal::languageManager()->getDefaultLanguage()->getId();
+
+
+      \Drupal::service('plugin.manager.mail')->mail($module, $key, $to, $language, $params);
+    }
+  }
+}
+
+
+/**
+ * Implements hook_mail().
+ */
+function notify_entity_mail($key, &$message, $params) {
+  $event = $params['event'];
+  $entity = $params['entity'];
+
+  $variables = [
+    '@site-name' => \Drupal::config('system.site')->get('name'),
+    '@entity-type-name' => $entity->getEntityType()->getLabel(),
+    '@entity-title' => $entity->label(),
+    '@entity-url' => $entity->toUrl('canonical', ['absolute' => TRUE])->toString(),
+    '@id' => $entity->id(),
+  ];
+  switch ($params['event']) {
+    case 'insert' : $variables['@verb'] = t('New'); break;
+    case 'update' : $variables['@verb'] = t('Updated'); break;
+    case 'delete' : $variables['@verb'] = t('Deleted'); break;
+    default: $variables['@verb'] = t('Unknown action'); break;
+  }
+  $options = array('langcode' => $message['langcode']);
+
+  switch($key) {
+    case 'new_post':
+      $message['subject'] = t('@verb @entity-type-name on @site-name', $variables, $options);
+      $message['body'][] = t("@verb @entity-type-name title: @entity-title", $variables, $options);
+      if ($event == 'delete') {
+        $message['body'][] = t("The deleted URL was: @entity-url", $variables, $options);
+        $message['body'][] = t("The deleted Entity ID: @id", $variables, $options);
+      }
+      else {
+        $message['body'][] = t("View it here: @entity-url", $variables, $options);
+      }
+      break;
+  }
+}
+
+function _notify_entity_make_key($entity_type, $bundle_type = NULL) {
+  return $bundle_type ? "{$entity_type}.{$bundle_type}" : "{$entity_type}.{$entity_type}";
+}

@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * Implements hook_install().
+ */
+function notify_entity_install() {
+  module_set_weight('notify_entity', 20);
+}
+
+
+/**
+ * Implements hook_uninstall().
+ */
+function notify_entity_uninstall() {
+  \Drupal::configFactory()->getEditable('notify_entity.settings')->delete();
+}
