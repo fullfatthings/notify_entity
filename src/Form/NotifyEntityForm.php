@@ -31,32 +31,16 @@ class NotifyEntityForm extends ConfigFormBase {
     $form = parent::buildForm($form, $form_state);
 
     $form['#tree'] = TRUE;
-    $this->formCreateNodeRows($form);
-    $this->formCreateUserRows($form);
 
-    return $form;
-  }
-
-
-  /**
-   * Create setting containers for all node types.
-   * @param array $form
-   */
-  protected function formCreateNodeRows(array &$form) {
-    $types = node_type_get_names();
-    $entity_name = t('Node');
-    foreach ($types as $type => $name) {
-      $form['settings']['node'][$type] = $this->formCreateRow('node', $entity_name, $type, $name);
+    $entities = \Drupal::entityManager()->getAllBundleInfo();
+    foreach ($entities as $entity_type => $bundles) {
+      foreach ($bundles as $bundle_type => $bundle_info) {
+        $form['settings'][$entity_type][$bundle_type] = $this->formCreateRow(
+          $entity_type, $entity_type, $bundle_type, $bundle_info['label']
+        );
+      }
     }
-  }
-
-
-  /**
-   * Create setting containers for all node types.
-   * @param array $form
-   */
-  protected function formCreateUserRows(array &$form) {
-    $form['settings']['user']['user'] = $this->formCreateRow('user', t('User'));
+    return $form;
   }
 
 
@@ -68,16 +52,18 @@ class NotifyEntityForm extends ConfigFormBase {
    * @param string $bundle_name   The bundle human name; eg 'Article'
    * @return array
    */
-  protected function formCreateRow($entity_type, $entity_name, $bundle_type = NULL, $bundle_name = NULL) {
+  protected function formCreateRow($entity_type, $entity_name, $bundle_type, $bundle_name) {
     $config = $this->config('notify_entity.settings');
-    if (isset($bundle_type)) {
-      $title = $this->t('%bundle_name @entity_name', [
+
+    // If the entity and bundle types match, lets just assume it's a single-bundle entity type.
+    if ($bundle_type == $entity_type) {
+      $title = $entity_name;
+    }
+    else {
+      $title = $this->t('@entity_name: %bundle_name', [
         '%bundle_name' => $bundle_name,
         '@entity_name' => $entity_name,
       ]);
-    }
-    else {
-      $title = $entity_name;
     }
     $key = _notify_entity_make_key($entity_type, $bundle_type);
 

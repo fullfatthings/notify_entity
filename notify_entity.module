@@ -34,7 +34,7 @@ function notify_entity_entity_update(Drupal\Core\Entity\EntityInterface $entity)
  */
 function _notify_entity_trigger_event($event, Drupal\Core\Entity\EntityInterface $entity) {
   $config = \Drupal::configFactory()->get('notify_entity.settings');
-  $key = $entity->getEntityTypeId() . '.' . $entity->bundle();
+  $key = _notify_entity_make_key($entity->getEntityTypeId(), $entity->bundle());
 
   if ($value = $config->get($key)) {
     if ($value[$event]) {
@@ -91,6 +91,6 @@ function notify_entity_mail($key, &$message, $params) {
   }
 }
 
-function _notify_entity_make_key($entity_type, $bundle_type = NULL) {
-  return $bundle_type ? "{$entity_type}.{$bundle_type}" : "{$entity_type}.{$entity_type}";
+function _notify_entity_make_key($entity_type, $bundle_type) {
+  return "{$entity_type}.{$bundle_type}";
 }
