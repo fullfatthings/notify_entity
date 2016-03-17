@@ -38,6 +38,15 @@ function _notify_entity_trigger_event($event, Drupal\Core\Entity\EntityInterface
 
   if ($value = $config->get($key)) {
     if ($value[$event]) {
+      // If status is set, check if it matches condition
+      if (isset($value['status']) && $value['status'] != 'any') {
+        if (
+        ($entity->isPublished() && $value['status'] == 'unpublished') ||
+        (!$entity->isPublished() && $value['status'] == 'published')
+        ) {
+          return;
+        }
+      }
       $module = 'notify_entity';
       $key = 'new_post';
       $to = $value['email'];

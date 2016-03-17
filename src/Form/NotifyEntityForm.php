@@ -73,8 +73,8 @@ class NotifyEntityForm extends ConfigFormBase {
       'insert' => TRUE,
       'update' => FALSE,
       'delete' => FALSE,
+      'status' => 'any'
     ];
-
     return [
       '#type' => 'details',
       '#title' => $title,
@@ -98,6 +98,17 @@ class NotifyEntityForm extends ConfigFormBase {
         '#type' => 'checkbox',
         '#title' => $this->t('Trigger on delete'),
         '#default_value' => $defaults['delete'],
+      ],
+      'status' => [
+        '#type' => 'radios',
+        '#title' => $this->t('State'),
+        '#options' => [
+          'any' => $this->t('Any'),
+          'published' => $this->t('Published'),
+          'unpublished' => $this->t('Unpublished'),
+        ],
+        '#access' => ($entity_type == 'node' || $entity_type == 'comment'),
+        '#default_value' => $defaults['status'],
       ],
     ];
   }
